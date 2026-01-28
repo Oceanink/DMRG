@@ -215,7 +215,7 @@ end
 # %%
 # DMRG sweep
 
-N = 50 # number of sites
+N = 20 # number of sites
 d = 2 # physical dim
 D = 20 # bond dim
 
@@ -233,7 +233,7 @@ println("Final energy: ", λs[end])
 # %%
 # Visualization
 
-E_exact = (N - 1) * (0.25 - log(2))
+E_exact = N * (0.25 - log(2)) + (pi - 1 - 2 * log(2)) / 4
 E_err = abs(λs[end] - E_exact)
 println("Theoretical ground energy: ", E_exact)
 
