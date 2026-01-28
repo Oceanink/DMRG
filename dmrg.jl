@@ -73,18 +73,14 @@ function DMRG_1step(left_env::Array{T,3}, O::Array{T2,4}, right_env::Array{T,3})
     @tensor H_eff[u, i, o, j, k, l] := left_env[u, y, j] * O[y, p, i, k] * right_env[o, p, l]
 
     H_eff_size = size(H_eff)
-    dim = prod(H_eff_size[1:3])
+    dim1 = prod(H_eff_size[1:3])
+    dim2 = prod(H_eff_size[4:6])
 
-    # Define matrix-vector product without forming full matrix
-    function matvec(v)
-        v_tensor = reshape(v, H_eff_size[1:3])
-        @tensor result[j, k, l] := H_eff[u, i, o, j, k, l] * v_tensor[u, i, o]
-        return reshape(result, dim)
-    end
 
     # Find only the smallest eigenvalue using iterative method
     # :SR means "smallest real" eigenvalue
-    λs, vecs, info = eigsolve(matvec, dim, 1, :SR; ishermitian=true, tol=1e-10)
+    H_eff_mat = reshape(H_eff, dim1, dim2)
+    λs, vecs, _ = eigsolve(H_eff_mat, 1, :SR)
 
     λ = real(λs[1])
     An_new = reshape(vecs[1], H_eff_size[4:6])
@@ -221,7 +217,7 @@ end
 
 N = 50 # number of sites
 d = 2 # physical dim
-D = 30 # bond dim
+D = 20 # bond dim
 
 # generate random mps
 mps_rnd = MPS{Float64}(N, d, D)

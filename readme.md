@@ -4,6 +4,11 @@
 
 This is a Julia implementation of the DMRG (Density Matrix Renormalization Group) algorithm for finding ground states of the Heisenberg spin chain.
 
+Some results
+![](./result_N=20.png)
+![](./result_N=50.png)
+![](./result_N=100.png)
+
 ## Architecture
 
 ### Data Structures (src/MatrixProductStruct.jl)
