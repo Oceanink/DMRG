@@ -1,12 +1,10 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# One-site DMRG on Heisenberg Chain
 
 ## Project Overview
 
-This is a Julia implementation of the DMRG (Density Matrix Renormalization Group) algorithm for finding ground states of quantum many-body systems, specifically applied to the Heisenberg spin chain.
+This is a Julia implementation of the DMRG (Density Matrix Renormalization Group) algorithm for finding ground states of the Heisenberg spin chain.
 
-## Core Architecture
+## Architecture
 
 ### Data Structures (src/MatrixProductStruct.jl)
 
@@ -45,7 +43,7 @@ The DMRG implementation uses a one-site sweeping algorithm:
 
 ### Tensor Conventions
 
-- All tensor contractions use the `@tensor` macro from TensorOperations.jl with Einstein notation
+- All tensor contractions use the `@tensor` macro from TensorOperations.jl
 - MPS tensors: `A[left, physical, right]`
 - MPO tensors: `O[left, right, phys_in, phys_out]`
 - Environment tensors: `env[mps_bond, mpo_bond, mps_bond]`
