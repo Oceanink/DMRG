@@ -5,9 +5,11 @@
 This is a Julia implementation of the DMRG (Density Matrix Renormalization Group) algorithm for finding ground states of the Heisenberg spin chain.
 
 Some results
-![](./result_N=20.png)
-![](./result_N=50.png)
-![](./result_N=100.png)
+
+<p align="center">
+  <img src="./N=50_OBC.png" width="70%">
+  <img src="./N=50_PBC.png" width="70%">
+</p>
 
 ## Architecture
 
@@ -31,7 +33,7 @@ The `heisen_chain_MPO(N)` function constructs the MPO for the Heisenberg Hamilto
 - Implements nearest-neighbor interactions via a 5-dimensional bond space
 - Special handling for first, last, and bulk sites
 
-### DMRG Algorithm (dmrg.jl)
+### DMRG Algorithm (src/DMRGFunc.jl)
 
 The DMRG implementation uses a one-site sweeping algorithm:
 

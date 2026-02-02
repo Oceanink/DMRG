@@ -10,7 +10,7 @@ using Plots, Printf
 
 N = 50 # number of sites
 d = 2 # physical dim
-D = 10 # bond dim
+D = 20 # bond dim
 
 # generate random mps
 mps_rnd = MPS{Float64}(N, d, D)
@@ -27,7 +27,10 @@ println("Final energy: ", λs[end])
 # %%
 # Visualization
 
-# E_exact_OBC = N * (0.25 - log(2)) + (pi - 1 - 2 * log(2)) / 4
+# for OBC
+# E_exact = N * (0.25 - log(2)) + (pi - 1 - 2 * log(2)) / 4
+
+# for PBC
 E_exact = N * (0.25 - log(2))
 
 E_err = abs(λs[end] - E_exact)
