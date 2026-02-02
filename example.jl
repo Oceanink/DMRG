@@ -16,8 +16,9 @@ D = 10 # bond dim
 mps_rnd = MPS{Float64}(N, d, D)
 r2l_LQ!(mps_rnd)
 
-# generate mpo of N-site OBC heisenberg chain
-mpo = heisen_chain_MPO(N)
+# generate mpo of N-site PBC heisenberg chain
+BC = "PBC"
+mpo = heisen_chain_MPO(N, BC)
 
 @time λs = DMRG_loop!(mps_rnd, mpo, 2, 1e-6)
 
@@ -26,7 +27,8 @@ println("Final energy: ", λs[end])
 # %%
 # Visualization
 
-E_exact = N * (0.25 - log(2)) + (pi - 1 - 2 * log(2)) / 4
+# E_exact_OBC = N * (0.25 - log(2)) + (pi - 1 - 2 * log(2)) / 4
+E_exact = N * (0.25 - log(2))
 
 E_err = abs(λs[end] - E_exact)
 println("Theoretical ground energy: ", E_exact)
@@ -40,4 +42,4 @@ ytick_labels = [@sprintf("%.2f", y) for y in new_yticks]
 yticks!(p, new_yticks, ytick_labels)
 hline!(p, [E_exact]; label="Theoretical ground energy", linestyle=:dash, linewidth=2)
 
-title!(p, "$N sites, $D bond dim, error = $(round(E_err, digits=4))")
+title!(p, "$N sites, $D bond dim, $BC, error = $(round(E_err, digits=4))")
