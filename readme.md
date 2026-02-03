@@ -7,8 +7,8 @@ This is a Julia implementation of the DMRG (Density Matrix Renormalization Group
 Some results
 
 <p align="center">
-  <img src="./N=50_OBC.png" width="70%">
-  <img src="./N=50_PBC.png" width="70%">
+  <img src="./img/N=50_OBC.png" width="70%">
+  <img src="./img/N=50_PBC.png" width="70%">
 </p>
 
 ## Architecture

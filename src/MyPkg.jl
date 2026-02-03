@@ -7,6 +7,7 @@ using KrylovKit
 
 include("MatrixProductStruct.jl")
 include("HeisenChainMPO.jl")
+include("HeisenChainBethe.jl")
 include("DMRGFunc.jl")
 
 end
