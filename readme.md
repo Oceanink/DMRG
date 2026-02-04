@@ -6,9 +6,14 @@ This is a Julia implementation of the DMRG (Density Matrix Renormalization Group
 
 Some results
 
+- per step energy, open boundary condition
 <p align="center">
   <img src="./img/N=50_OBC.png" width="70%">
-  <img src="./img/N=50_PBC.png" width="70%">
+</p>
+
+- errors in different number of sites and bond-dim, periodic boundary condition
+<p align="center">
+  <img src="./img/relativeErrN-D_PBC.png" width="70%">
 </p>
 
 ## Architecture
@@ -27,11 +32,11 @@ Some results
 
 ### Heisenberg Chain MPO (src/HeisenChainMPO.jl)
 
-The `heisen_chain_MPO(N)` function constructs the MPO for the Heisenberg Hamiltonian using a specific tensor structure:
+The `heisen_chain_MPO(N, BC)` function constructs the MPO for the Heisenberg Hamiltonian using a specific tensor structure:
 
 - Uses Pauli matrices: Sz (spin-z), Sp (spin-plus), Sm (spin-minus)
-- Implements nearest-neighbor interactions via a 5-dimensional bond space
-- Special handling for first, last, and bulk sites
+- `BC="OBC"`: mpo with bond dim = 5
+- `BC="PBC"`: mpo with bond dim = 8
 
 ### DMRG Algorithm (src/DMRGFunc.jl)
 
@@ -40,7 +45,8 @@ The DMRG implementation uses a one-site sweeping algorithm:
 1. **Preparation** (`l2r_DMRG_prep`): Computes all right environments before the first sweep
 2. **Left-to-right sweep** (`l2r_DMRG`): Updates sites 1 to N-1, maintaining left-canonical form via QR decomposition
 3. **Right-to-left sweep** (`r2l_DMRG`): Updates sites N to 2, maintaining right-canonical form via LQ decomposition
-4. **Main loop** (`DMRG_loop`): Alternates between forward and backward sweeps until convergence
+4. **Main loop** (`DMRG_loop`): Alternates between forward and backward sweeps until convergence, stop after one loop, return energies after all updates
+5. **Main loop** (`DMRG_converge`): Alternates between forward and backward sweeps until convergence, stop right after the site is updated, only return the final energy
 
 **Key functions:**
 

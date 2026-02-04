@@ -1,4 +1,4 @@
-export mps_norm, r2l_LQ!, DMRG_loop!
+export mps_norm, r2l_LQ!, DMRG_loop!, DMRG_converge!
 
 function mps_norm(mps::MPS)::Float64
     N = mps.N
@@ -201,4 +201,124 @@ function DMRG_loop!(mps::MPS{T}, mpo::MPO, times::Int, threshold::Float64) where
     end
 
     return λs_all[1:idx]
+end
+
+"""
+    DMRG_converge!(mps::MPS{T}, mpo::MPO, max_sites_updated::Int, threshold::Float64) where {T}
+
+Perform DMRG sweeps until convergence, returning a tuple (final_energy, sites_updated).
+The algorithm stops when either:
+1. The energy change after a site update is below `threshold` (convergence reached), or
+2. Total number of site updates reaches `max_sites_updated`.
+Modifies the MPS in-place.
+
+`sites_updated` is the number of site updates performed before convergence,
+or -1 if convergence was not reached within `max_sites_updated`.
+"""
+function DMRG_converge!(mps::MPS{T}, mpo::MPO, max_sites_updated::Int, threshold::Float64) where {T}
+    N = mps.N
+
+    # Preallocate environments (reused across sweeps)
+    left_envs = Vector{Array{T,3}}(undef, N)
+    right_envs = l2r_DMRG_prep(mps, mpo)
+
+    # Tracking variables
+    λ_prev = Inf  # previous energy value (from last site update)
+    sites_updated = 0
+    converged = false
+    final_energy = NaN
+
+    while (sites_updated < max_sites_updated) && !converged
+        # Left-to-right sweep (sites 1 to N-1)
+        left_envs[1] = ones(1, 1, 1)
+        for n in 1:N-1
+            # Check if we've reached max sites
+            if sites_updated >= max_sites_updated
+                break
+            end
+
+            left_env = left_envs[n]
+            right_env = right_envs[n]
+            On = mpo.O[n]
+
+            # update site n
+            An_new, λ = DMRG_1step(left_env, On, right_env)
+
+            # Check convergence with previous energy
+            if abs(λ - λ_prev) < threshold
+                converged = true
+                final_energy = λ
+                # Update the current site before breaking
+                Q = _l2r_QR(An_new)
+                sites_updated += 1
+                mps.A[n] = Q
+                # Update left environment for consistency (optional)
+                @tensor left_env_new[o, p, l] := left_env[u, y, j] * conj(Q)[u, i, o] * On[y, p, i, k] * Q[j, k, l]
+                left_envs[n+1] = left_env_new
+                break
+            end
+            λ_prev = λ
+
+            # normalize and store
+            Q = _l2r_QR(An_new)
+            sites_updated += 1
+            mps.A[n] = Q
+
+            # Update left environment
+            @tensor left_env_new[o, p, l] := left_env[u, y, j] * conj(Q)[u, i, o] * On[y, p, i, k] * Q[j, k, l]
+            left_envs[n+1] = left_env_new
+        end
+
+        if converged || (sites_updated >= max_sites_updated)
+            break
+        end
+
+        # Right-to-left sweep (sites N to 2)
+        right_envs[N] = ones(1, 1, 1)
+        for n in N:-1:2
+            # Check if we've reached max sites
+            if sites_updated >= max_sites_updated
+                break
+            end
+
+            left_env = left_envs[n]
+            right_env = right_envs[n]
+            On = mpo.O[n]
+
+            # update site n
+            An_new, λ = DMRG_1step(left_env, On, right_env)
+
+            # Check convergence with previous energy
+            if abs(λ - λ_prev) < threshold
+                converged = true
+                final_energy = λ
+                # Update the current site before breaking
+                Q = _r2l_LQ(An_new)
+                sites_updated += 1
+                mps.A[n] = Q
+                # Update right environment for consistency (optional)
+                @tensor right_env_new[u, y, j] := right_env[o, p, l] * conj(Q)[u, i, o] * On[y, p, i, k] * Q[j, k, l]
+                right_envs[n-1] = right_env_new
+                break
+            end
+            λ_prev = λ
+
+            # normalize and store
+            Q = _r2l_LQ(An_new)
+            sites_updated += 1
+            mps.A[n] = Q
+
+            # Update right environment
+            @tensor right_env_new[u, y, j] := right_env[o, p, l] * conj(Q)[u, i, o] * On[y, p, i, k] * Q[j, k, l]
+            right_envs[n-1] = right_env_new
+        end
+    end
+
+    # Set return values
+    if !converged
+        final_energy = λ_prev
+        sites_updated = -1
+    end
+
+    return (final_energy, sites_updated)
 end
