@@ -1,4 +1,6 @@
-# One-site DMRG on Heisenberg Chain
+# DEPRECATED
+
+This project has been moved to https://github.com/Oceanink/MyDMRGPkg.jl
 
 ## Project Overview
 
